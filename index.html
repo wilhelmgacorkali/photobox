@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SNAPBOX - Digital Photobooth & Strip Studio</title>
+  <meta name="description" content="Aplikasi Photobox Digital Online ala Korea untuk HP dan Laptop. Pilih berbagai bingkai foto, tema background lucu & estetik, filter kamera vintage, dan stiker gemas.">
+  <meta name="keywords" content="photobox digital, korean photobooth, photo strip online, life4cuts online, photobox hp, bingkai foto lucu, background estetik">
+  <meta name="theme-color" content="#0f1015">
+  
+  <!-- Favicon / Touch Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon" aria-hidden="true">📸</div>
+        <div class="brand-text">
+          <h1>SNAPBOX <span class="brand-badge">Digital Booth</span></h1>
+          <p class="tagline">Photobox Digital Aesthetic & Lucu ala Korea</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-sound-toggle" class="btn-icon-soft active" title="Toggle Suara Shutter & Timer" aria-label="Toggle Sound">
+          🔊
+        </button>
+        <button id="btn-info" class="btn-icon-soft" title="Petunjuk Penggunaan" aria-label="Info">
+          ✨
+        </button>
+      </div>
+    </header>
+
+    <!-- Visual Steps Indicator -->
+    <nav class="steps-nav" aria-label="Progress Alur Foto">
+      <div class="step-item active" id="step-nav-1">
+        <span class="step-num">1</span>
+        <span>Pilih Bingkai</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="step-nav-2">
+        <span class="step-num">2</span>
+        <span>Ambil Foto</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="step-nav-3">
+        <span class="step-num">3</span>
+        <span>Hias & Unduh</span>
+      </div>
+    </nav>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-stage">
+
+      <!-- LEFT COLUMN: Live Camera Booth & Capture Controls -->
+      <section class="panel booth-section" aria-labelledby="booth-title">
+        <div class="section-title">
+          <span id="booth-title">Kamera Photobox</span>
+          <span class="badge" id="camera-status-badge">Webcam / Kamera HP</span>
+        </div>
+
+        <!-- Camera Viewfinder Card -->
+        <div class="viewfinder-card" id="viewfinder-container">
+          <!-- Video Element (Front or Back Camera) -->
+          <video id="camera-video" autoplay playsinline muted></video>
+
+          <!-- Flash Burst Overlay -->
+          <div id="flash-overlay" class="flash-overlay"></div>
+
+          <!-- Countdown & Pose Overlay -->
+          <div id="countdown-overlay" class="countdown-overlay">
+            <div id="countdown-number" class="countdown-number">3</div>
+            <div id="countdown-status" class="countdown-status-text">Bersiap untuk foto...</div>
+          </div>
+
+          <!-- Viewfinder Frame Corner Guides -->
+          <div class="hud-corners"></div>
+
+          <!-- Viewfinder Heads-Up Indicators -->
+          <div class="viewfinder-hud">
+            <div class="hud-top">
+              <div class="hud-pill">
+                <span class="live-indicator"></span>
+                <span>LIVE VIEW</span>
+              </div>
+              <div class="hud-pill" id="hud-timer-badge">
+                ⏱️ Auto-Timer
+              </div>
+            </div>
+          </div>
+
+          <!-- State when Camera is not yet permitted / active -->
+          <div id="camera-placeholder" class="camera-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <h3>Siap untuk Berfoto?</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 320px;">
+              Aktifkan akses kamera untuk berfoto langsung atau unggah foto favoritmu dari galeri HP.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px;">
+              <button id="btn-start-camera" class="btn-primary-glow" style="padding: 10px 18px; font-size: 0.88rem;">
+                📷 Aktifkan Kamera
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Quick Toolbar -->
+        <div class="camera-controls-bar">
+          <div class="viewfinder-actions">
+            <!-- Switch Front / Rear Camera for HP -->
+            <button id="btn-flip-camera" class="btn-ctrl" title="Ganti Kamera Depan / Belakang HP">
+              🔄 <span>Balik Kamera</span>
+            </button>
+            <!-- Mirror Toggle -->
+            <button id="btn-mirror-camera" class="btn-ctrl active" title="Cermin Selfie">
+              🪞 <span>Cermin</span>
+            </button>
+            <!-- Timer Selector -->
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">⏱️</span>
+              <select id="timer-select" class="form-input" style="padding: 7px 10px; font-size: 0.8rem; background: var(--bg-glass);">
+                <option value="3">3 Detik</option>
+                <option value="5">5 Detik</option>
+                <option value="10">10 Detik</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Gallery Upload Button (Fallback & Mobile Convenience) -->
+          <div style="display: flex; gap: 6px;">
+            <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+            <button id="btn-upload-gallery" class="btn-ctrl" title="Ambil foto dari galeri HP">
+              📁 <span>Upload HP</span>
+            </button>
+            <button id="btn-demo-photos" class="btn-ctrl" title="Coba dengan foto peraga langsung">
+              ✨ <span>Demo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Selector Strip -->
+        <div class="filter-selector">
+          <div class="filter-selector-heading">
+            <span>Efek & Filter Foto</span>
+            <span class="filter-hint">Pilih gaya untuk kamera dan hasil akhir</span>
+          </div>
+          <div class="filters-scroll" id="filters-scroll-container" role="group" aria-label="Pilih efek dan filter foto">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Big Shutter Trigger Button -->
+        <div class="shutter-container">
+          <button id="btn-shutter" class="btn-shutter-main" title="Mulai Sesi Foto Berseri" aria-label="Ambil Foto"></button>
+          <div class="shutter-label">
+            <span>Ambil Foto Berseri</span>
+          </div>
+        </div>
+
+        <!-- Captured Shots Tray -->
+        <div class="shots-tray">
+          <div class="shots-tray-header">
+            <span>Foto yang Telah Diambil</span>
+            <span id="shot-count-badge">0/4 Foto</span>
+          </div>
+          <div class="shots-list" id="shots-list">
+            <!-- Slots dynamically rendered via JS -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: Customizer & Live Strip Preview -->
+      <section class="panel customizer-section" aria-labelledby="customizer-title">
+        
+        <!-- Tab Navigation -->
+        <div class="tabs-container" role="tablist">
+          <button class="tab-btn active" data-tab="layouts" role="tab" aria-selected="true">
+            🖼️ Bingkai
+          </button>
+          <button class="tab-btn" data-tab="themes" role="tab" aria-selected="false">
+            🎨 Background
+          </button>
+          <button class="tab-btn" data-tab="stickers" role="tab" aria-selected="false">
+            🎀 Stiker & Teks
+          </button>
+        </div>
+
+        <!-- TAB 1: Layout Selection (Berapa Bingkai) -->
+        <div class="tab-content active" id="panel-layouts" role="tabpanel">
+          <div class="section-title">
+            <span id="customizer-title">Pilih Format & Jumlah Bingkai</span>
+            <span class="badge">Layout Studio</span>
+          </div>
+          <div class="layout-grid" id="layout-selector-container">
+            <!-- Populated dynamically from layouts.js -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Themes & Backgrounds (Lucu vs Estetik) -->
+        <div class="tab-content" id="panel-themes" role="tabpanel">
+          <div class="section-title">
+            <span>Pilih Gaya Background</span>
+            <span class="badge">Aesthetic & Lucu</span>
+          </div>
+
+          <!-- Category filter pills -->
+          <div class="theme-category-pills">
+            <button class="cat-pill active" data-cat="all">Semua Tema</button>
+            <button class="cat-pill" data-cat="cute">🌸 Lucu & Cute</button>
+            <button class="cat-pill" data-cat="aesthetic">✨ Aesthetic & Retro</button>
+          </div>
+
+          <!-- Themes Grid -->
+          <div class="themes-grid" id="themes-grid-container">
+            <!-- Populated dynamically from themes.js -->
+          </div>
+
+          <!-- Custom Color Picker Option -->
+          <div class="custom-color-row">
+            <input type="color" id="custom-bg-color" class="custom-color-input" value="#ffccd5" title="Pilih Warna Kustom">
+            <div>
+              <div style="font-size: 0.82rem; font-weight: 700; color: #fff;">Warna Background Bebas</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Pilih warna pastel atau favoritmu</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Stickers, Stamps & Text -->
+        <div class="tab-content" id="panel-stickers" role="tabpanel">
+          <div class="section-title">
+            <span>Koleksi Stiker Lucu</span>
+            <button id="btn-clear-stickers" class="btn-ctrl" style="padding: 3px 8px; font-size: 0.72rem;">Hapus Semua</button>
+          </div>
+          
+          <div class="stickers-picker" id="stickers-picker-container">
+            <!-- Populated dynamically from themes.js -->
+          </div>
+          <p class="sticker-hint">💡 Klik stiker untuk menempel, lalu sentuh & geser di foto untuk ubah posisi (dobel klik untuk hapus).</p>
+
+          <hr style="border: 0; border-top: 1px solid var(--border-glass); margin: 10px 0;">
+
+          <!-- Text Customizer -->
+          <div class="form-group">
+            <label for="input-title" class="form-label">Judul Foto / Event</label>
+            <input type="text" id="input-title" class="form-input" value="SNAPBOX STUDIO" placeholder="Contoh: BESTIES FOREVER ♡" maxlength="32">
+          </div>
+
+          <div class="form-group">
+            <label for="input-subtitle" class="form-label">Pesan / Subtitle</label>
+            <input type="text" id="input-subtitle" class="form-input" value="PHOTOBOOTH MEMORY ♡" placeholder="Contoh: DATE NIGHT • JAKARTA" maxlength="40">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="toggle-row">
+              <span style="font-size: 0.8rem; font-weight: 600;">Stempel Tanggal</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-date" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <span style="font-size: 0.8rem; font-weight: 600;">Stempel Barcode</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-barcode" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photostrip Live Canvas Preview -->
+        <div class="section-title" style="margin-top: 10px;">
+          <span>Hasil Photostrip Kamu</span>
+          <span class="badge" style="color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3);">HD Canvas</span>
+        </div>
+
+        <div class="preview-stage-container">
+          <div class="canvas-wrapper">
+            <canvas id="photostrip-canvas" width="700" height="2200"></canvas>
+          </div>
+        </div>
+
+        <!-- Export Action Buttons -->
+        <div class="export-actions-grid">
+          <button id="btn-download" class="btn-primary-glow" title="Simpan file gambar kualitas tinggi">
+            📥 <span>Unduh Foto (PNG HD)</span>
+          </button>
+          <button id="btn-share" class="btn-secondary" title="Bagikan ke WhatsApp, Instagram, dll">
+            💌 <span>Bagikan</span>
+          </button>
+          <button id="btn-copy" class="btn-secondary" title="Salin gambar ke clipboard">
+            📋 <span>Salin</span>
+          </button>
+          <button id="btn-print" class="btn-secondary" title="Cetak langsung ke printer">
+            🖨️ <span>Cetak</span>
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Main Application Script (ES Module) -->
+  <script type="module" src="js/app.js"></script>
+
+  <script>
+    // Info and sound toggle top bar buttons
+    document.getElementById('btn-sound-toggle')?.addEventListener('click', function() {
+      const active = this.classList.toggle('active');
+      this.textContent = active ? '🔊' : '🔇';
+      import('./js/audio.js').then(m => m.soundFX.toggleSound(active));
+    });
+
+    document.getElementById('btn-info')?.addEventListener('click', function() {
+      alert("📸 CARA MENGGUNAKAN SNAPBOX:\n\n1. Pilih bingkai foto (3-strip, 4-strip, atau 2x2 grid).\n2. Pilih tema background (Lucu / Coquette / Berry / Aesthetic / Vintage 90s / Minimalis).\n3. Izinkan kamera HP/Laptop lalu tekan tombol merah untuk foto otomatis dengan countdown & flash!\n4. Tempel stiker lucu dan sesuaikan teks.\n5. Tekan 'Unduh Foto (PNG HD)' untuk simpan langsung ke HP!");
+    });
+  </script>
+</body>
+</html>
