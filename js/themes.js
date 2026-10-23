@@ -7,6 +7,10 @@ const floralCurtainImage = new Image();
 floralCurtainImage.onload = () => window.dispatchEvent(new Event('snapbox:backdrop-ready'));
 floralCurtainImage.src = new URL('../assets/floral-curtain.png', import.meta.url).href;
 
+const hogwartsImage = new Image();
+hogwartsImage.onload = () => window.dispatchEvent(new Event('snapbox:backdrop-ready'));
+hogwartsImage.src = new URL('../assets/hogwarts-castle.jpg', import.meta.url).href;
+
 export const THEMES = {
   // === AESTHETIC CATEGORY ===
   'noir-minimal': {
@@ -387,6 +391,46 @@ export const THEMES = {
       ctx.drawImage(floralCurtainImage, cropX, cropY, cropWidth, cropHeight, 0, 0, w, h);
       ctx.fillStyle = 'rgba(255, 241, 245, 0.12)';
       ctx.fillRect(0, 0, w, h);
+    }
+  },
+
+  'hogwarts-castle': {
+    id: 'hogwarts-castle',
+    name: 'Kastil Hogwarts 🏰',
+    category: 'aesthetic',
+    previewBg: `url("${new URL('../assets/hogwarts-castle.jpg', import.meta.url).href}") center / cover`,
+    textColor: '#fef08a',
+    subtextColor: '#93c5fd',
+    borderColor: 'rgba(255, 255, 255, 0.45)',
+    borderWidth: 2,
+    drawBackground(ctx, w, h) {
+      if (!hogwartsImage.complete || hogwartsImage.naturalWidth === 0) {
+        ctx.fillStyle = '#0b1329';
+        ctx.fillRect(0, 0, w, h);
+        return;
+      }
+
+      const imageRatio = hogwartsImage.naturalWidth / hogwartsImage.naturalHeight;
+      const targetRatio = w / h;
+      const cropWidth = imageRatio > targetRatio ? hogwartsImage.naturalHeight * targetRatio : hogwartsImage.naturalWidth;
+      const cropHeight = imageRatio > targetRatio ? hogwartsImage.naturalHeight : hogwartsImage.naturalWidth / targetRatio;
+      const cropX = (hogwartsImage.naturalWidth - cropWidth) / 2;
+      const cropY = (hogwartsImage.naturalHeight - cropHeight) / 2;
+      ctx.drawImage(hogwartsImage, cropX, cropY, cropWidth, cropHeight, 0, 0, w, h);
+
+      // Magical vignette overlay so photo slots pop beautifully
+      const vignette = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.25, w / 2, h / 2, Math.max(w, h) * 0.85);
+      vignette.addColorStop(0, 'rgba(15, 23, 42, 0.05)');
+      vignette.addColorStop(1, 'rgba(8, 12, 24, 0.55)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, w, h);
+
+      // Subtle golden star sparkles
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.85)';
+      drawFourPointStar(ctx, w * 0.12, 45, 10);
+      drawFourPointStar(ctx, w * 0.88, 48, 12);
+      drawFourPointStar(ctx, w * 0.15, h - 70, 11);
+      drawFourPointStar(ctx, w * 0.85, h - 75, 13);
     }
   }
 };

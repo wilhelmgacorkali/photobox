@@ -1,5 +1,6 @@
 export const CAMERA_BACKGROUNDS = [
   { id: 'original', name: 'Asli' },
+  { id: 'hogwarts-castle', name: 'Kastil Hogwarts' },
   { id: 'curtain-pink', name: 'Gorden Pink' },
   { id: 'curtain-cream', name: 'Gorden Cream' },
   { id: 'curtain-flowers', name: 'Gorden Bunga' },
@@ -22,6 +23,8 @@ export class CameraBackground {
     this.maskCtx = this.maskCanvas.getContext('2d');
     this.floralBackdrop = new Image();
     this.floralBackdrop.src = new URL('../assets/floral-curtain.png', import.meta.url).href;
+    this.hogwartsBackdrop = new Image();
+    this.hogwartsBackdrop.src = new URL('../assets/hogwarts-castle.jpg', import.meta.url).href;
     this.currentId = 'original';
     this.filterCSS = 'none';
     this.isMirrored = true;
@@ -46,6 +49,9 @@ export class CameraBackground {
     await this.initialize();
     if (backgroundId === 'curtain-flowers') {
       await this.loadFloralBackdrop();
+    }
+    if (backgroundId === 'hogwarts-castle') {
+      await this.loadHogwartsBackdrop();
     }
     this.currentId = backgroundId;
     if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
@@ -72,6 +78,27 @@ export class CameraBackground {
       this.floralBackdrop.addEventListener('load', resolve, { once: true });
       this.floralBackdrop.addEventListener('error', () => reject(new Error('Gambar background gorden bunga gagal dimuat.')), { once: true });
     });
+  }
+
+  loadHogwartsBackdrop() {
+    if (this.hogwartsBackdrop.complete && this.hogwartsBackdrop.naturalWidth > 0) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      this.hogwartsBackdrop.addEventListener('load', resolve, { once: true });
+      this.hogwartsBackdrop.addEventListener('error', () => reject(new Error('Gambar background Kastil Hogwarts gagal dimuat.')), { once: true });
+    });
+  }
+
+  drawCoverImage(ctx, img, width, height) {
+    if (!img.complete || img.naturalWidth === 0) return;
+    const imageRatio = img.naturalWidth / img.naturalHeight;
+    const targetRatio = width / height;
+    const cropWidth = imageRatio > targetRatio ? img.naturalHeight * targetRatio : img.naturalWidth;
+    const cropHeight = imageRatio > targetRatio ? img.naturalHeight : img.naturalWidth / targetRatio;
+    const cropX = (img.naturalWidth - cropWidth) / 2;
+    const cropY = (img.naturalHeight - cropHeight) / 2;
+    ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
   }
 
   async loadSegmenter() {
@@ -103,12 +130,15 @@ export class CameraBackground {
   start() {
     if (!this.segmenter || this.isRunning || this.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
     this.isRunning = true;
+    this.consecutiveErrors = 0;
+    this.lastTimestamp = Math.max(this.lastTimestamp || 0, performance.now());
     this.video.closest('.viewfinder-card')?.classList.add('virtual-background-active');
     this.renderFrame();
   }
 
   stop() {
     this.isRunning = false;
+    this.consecutiveErrors = 0;
     if (this.frameId !== null) {
       cancelAnimationFrame(this.frameId);
       this.frameId = null;
@@ -119,20 +149,38 @@ export class CameraBackground {
   renderFrame() {
     if (!this.isRunning || !this.segmenter) return;
 
+    if (
+      !this.video ||
+      this.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA ||
+      !this.video.videoWidth ||
+      !this.video.videoHeight ||
+      this.video.videoWidth <= 0 ||
+      this.video.videoHeight <= 0
+    ) {
+      this.frameId = requestAnimationFrame(() => this.renderFrame());
+      return;
+    }
+
     try {
-      const timestamp = Math.max(performance.now(), this.lastTimestamp + 1);
+      const now = performance.now();
+      const timestamp = now > this.lastTimestamp ? now : this.lastTimestamp + 1;
       this.lastTimestamp = timestamp;
       const result = this.segmenter.segmentForVideo(this.video, timestamp);
-      const mask = result.confidenceMasks[0];
+      const mask = result?.confidenceMasks?.[0];
       if (mask) {
         this.drawComposite(mask);
         mask.close();
       }
+      this.consecutiveErrors = 0;
     } catch (error) {
-      this.stop();
-      console.error('Virtual background rendering failed:', error);
-      if (this.onError) this.onError(error);
-      return;
+      console.warn('Virtual background rendering warning:', error);
+      this.consecutiveErrors = (this.consecutiveErrors || 0) + 1;
+      if (this.consecutiveErrors > 15) {
+        this.stop();
+        console.error('Virtual background rendering failed permanently:', error);
+        if (this.onError) this.onError(error);
+        return;
+      }
     }
 
     this.frameId = requestAnimationFrame(() => this.renderFrame());
@@ -196,8 +244,13 @@ export class CameraBackground {
       return;
     }
 
+    if (background.id === 'hogwarts-castle') {
+      this.drawCoverImage(ctx, this.hogwartsBackdrop, width, height);
+      return;
+    }
+
     if (background.id === 'curtain-flowers') {
-      ctx.drawImage(this.floralBackdrop, 0, 0, width, height);
+      this.drawCoverImage(ctx, this.floralBackdrop, width, height);
       return;
     }
 

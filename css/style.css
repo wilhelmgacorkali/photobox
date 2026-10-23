@@ -323,10 +323,12 @@ body::before {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 2;
 }
 
 .viewfinder-card.virtual-background-active #camera-video {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .viewfinder-card.virtual-background-active #camera-background-canvas {
@@ -1060,6 +1062,10 @@ body::before {
 
 .backdrop-chip[data-backdrop="curtain-cream"] .backdrop-swatch {
   --backdrop-preview: repeating-linear-gradient(90deg, #947957 0 5px, #f1dfc0 10px 17px, #c9ad82 22px 28px);
+}
+
+.backdrop-chip[data-backdrop="hogwarts-castle"] .backdrop-swatch {
+  background: url("../assets/hogwarts-castle.jpg") center / cover;
 }
 
 .backdrop-chip[data-backdrop="curtain-flowers"] .backdrop-swatch {

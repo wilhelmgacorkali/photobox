@@ -128,6 +128,11 @@ async function tryAutoStartCamera() {
 
 function setupCameraListeners() {
   camera.background.onError = error => {
+    backdropsContainer?.querySelectorAll('.backdrop-chip').forEach(chip => {
+      const isOriginal = chip.dataset.backdrop === 'original';
+      chip.classList.toggle('active', isOriginal);
+      chip.setAttribute('aria-pressed', String(isOriginal));
+    });
     showToast(`Efek background berhenti: ${error.message}`, 'error');
   };
 
