@@ -33,6 +33,7 @@ const btnDemoPhotos = document.getElementById('btn-demo-photos');
 // Customizer Controls
 const layoutContainer = document.getElementById('layout-selector-container');
 const themeContainer = document.getElementById('themes-grid-container');
+const printBackgroundSelect = document.getElementById('print-background-select');
 const categoryPills = document.querySelectorAll('.cat-pill');
 const customColorInput = document.getElementById('custom-bg-color');
 const filtersContainer = document.getElementById('filters-scroll-container');
@@ -84,6 +85,8 @@ function init() {
   setupCameraListeners();
   setupCustomizerListeners();
   setupExportListeners();
+  populatePrintBackgroundOptions();
+  window.addEventListener('snapbox:backdrop-ready', () => renderer.render());
 
   // Initial initialisation of the canvas renderer
   renderer.render();
@@ -418,11 +421,39 @@ function renderThemes(category = 'all') {
     card.addEventListener('click', () => {
       document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
+      printBackgroundSelect.value = theme.id;
       renderer.setTheme(theme.id);
       showToast(`Tema diterapkan: ${theme.name} ✨`);
     });
 
     themeContainer.appendChild(card);
+  });
+}
+
+function populatePrintBackgroundOptions() {
+  Object.values(THEMES).forEach(theme => {
+    const option = document.createElement('option');
+    option.value = theme.id;
+    option.textContent = theme.name;
+    printBackgroundSelect.appendChild(option);
+  });
+
+  printBackgroundSelect.value = renderer.currentThemeId;
+  printBackgroundSelect.addEventListener('change', () => {
+    if (printBackgroundSelect.value === 'custom') return;
+
+    const theme = THEMES[printBackgroundSelect.value];
+    if (!theme) return;
+    categoryPills.forEach(pill => {
+      pill.classList.toggle('active', pill.dataset.cat === 'all');
+    });
+    activeThemeCategory = 'all';
+    renderThemes(activeThemeCategory);
+    document.querySelectorAll('.theme-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.id === theme.id);
+    });
+    renderer.setTheme(theme.id);
+    showToast(`Background hasil cetak: ${theme.name} ✨`);
   });
 }
 
@@ -540,6 +571,7 @@ function setupCustomizerListeners() {
   // Custom Color Background Picker
   customColorInput.addEventListener('input', (e) => {
     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+    printBackgroundSelect.value = 'custom';
     renderer.setCustomBg(e.target.value);
   });
 
@@ -625,7 +657,8 @@ function setupExportListeners() {
   });
 
   // Direct Browser Print
-  btnPrint.addEventListener('click', () => {
+  btnPrint.addEventListener('click', async () => {
+    await renderer.render();
     window.print();
   });
 

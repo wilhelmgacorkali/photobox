@@ -2,6 +2,7 @@ export const CAMERA_BACKGROUNDS = [
   { id: 'original', name: 'Asli' },
   { id: 'curtain-pink', name: 'Gorden Pink' },
   { id: 'curtain-cream', name: 'Gorden Cream' },
+  { id: 'curtain-flowers', name: 'Gorden Bunga' },
   { id: 'plain-white', name: 'Polos Putih' },
   { id: 'plain-blue', name: 'Polos Biru' },
   { id: 'plain-pink', name: 'Polos Pink' }
@@ -19,6 +20,8 @@ export class CameraBackground {
     this.foregroundCtx = this.foregroundCanvas.getContext('2d');
     this.maskCanvas = document.createElement('canvas');
     this.maskCtx = this.maskCanvas.getContext('2d');
+    this.floralBackdrop = new Image();
+    this.floralBackdrop.src = new URL('../assets/floral-curtain.png', import.meta.url).href;
     this.currentId = 'original';
     this.filterCSS = 'none';
     this.isMirrored = true;
@@ -41,6 +44,9 @@ export class CameraBackground {
     }
 
     await this.initialize();
+    if (backgroundId === 'curtain-flowers') {
+      await this.loadFloralBackdrop();
+    }
     this.currentId = backgroundId;
     if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
       this.start();
@@ -56,6 +62,16 @@ export class CameraBackground {
       });
     }
     await this.loadPromise;
+  }
+
+  loadFloralBackdrop() {
+    if (this.floralBackdrop.complete && this.floralBackdrop.naturalWidth > 0) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      this.floralBackdrop.addEventListener('load', resolve, { once: true });
+      this.floralBackdrop.addEventListener('error', () => reject(new Error('Gambar background gorden bunga gagal dimuat.')), { once: true });
+    });
   }
 
   async loadSegmenter() {
@@ -177,6 +193,11 @@ export class CameraBackground {
   drawBackdrop(ctx, background, width, height) {
     if (background.id === 'original') {
       ctx.drawImage(this.video, 0, 0, width, height);
+      return;
+    }
+
+    if (background.id === 'curtain-flowers') {
+      ctx.drawImage(this.floralBackdrop, 0, 0, width, height);
       return;
     }
 

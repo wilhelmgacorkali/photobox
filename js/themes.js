@@ -3,6 +3,10 @@
  * Curated Cute & Aesthetic frames with custom Canvas drawing patterns.
  */
 
+const floralCurtainImage = new Image();
+floralCurtainImage.onload = () => window.dispatchEvent(new Event('snapbox:backdrop-ready'));
+floralCurtainImage.src = new URL('../assets/floral-curtain.png', import.meta.url).href;
+
 export const THEMES = {
   // === AESTHETIC CATEGORY ===
   'noir-minimal': {
@@ -355,6 +359,34 @@ export const THEMES = {
       ctx.fillText('✨', w / 2 - 12, 48);
       ctx.fillText('🎈', w - 50, h - 55);
       ctx.fillText('🍭', 20, h - 55);
+    }
+  },
+
+  'floral-curtain': {
+    id: 'floral-curtain',
+    name: 'Gorden Bunga',
+    category: 'cute',
+    previewBg: `url("${new URL('../assets/floral-curtain.png', import.meta.url).href}") center / cover`,
+    textColor: '#7b2141',
+    subtextColor: '#a34767',
+    borderColor: '#fff1f5',
+    borderWidth: 3,
+    drawBackground(ctx, w, h) {
+      if (!floralCurtainImage.complete || floralCurtainImage.naturalWidth === 0) {
+        ctx.fillStyle = '#f5dfe6';
+        ctx.fillRect(0, 0, w, h);
+        return;
+      }
+
+      const imageRatio = floralCurtainImage.naturalWidth / floralCurtainImage.naturalHeight;
+      const targetRatio = w / h;
+      const cropWidth = imageRatio > targetRatio ? floralCurtainImage.naturalHeight * targetRatio : floralCurtainImage.naturalWidth;
+      const cropHeight = imageRatio > targetRatio ? floralCurtainImage.naturalHeight : floralCurtainImage.naturalWidth / targetRatio;
+      const cropX = (floralCurtainImage.naturalWidth - cropWidth) / 2;
+      const cropY = (floralCurtainImage.naturalHeight - cropHeight) / 2;
+      ctx.drawImage(floralCurtainImage, cropX, cropY, cropWidth, cropHeight, 0, 0, w, h);
+      ctx.fillStyle = 'rgba(255, 241, 245, 0.12)';
+      ctx.fillRect(0, 0, w, h);
     }
   }
 };

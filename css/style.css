@@ -1062,6 +1062,10 @@ body::before {
   --backdrop-preview: repeating-linear-gradient(90deg, #947957 0 5px, #f1dfc0 10px 17px, #c9ad82 22px 28px);
 }
 
+.backdrop-chip[data-backdrop="curtain-flowers"] .backdrop-swatch {
+  background: url("../assets/floral-curtain.png") center / cover;
+}
+
 .backdrop-chip[data-backdrop="plain-white"] .backdrop-swatch {
   --backdrop-preview: linear-gradient(145deg, #fffdfa, #eeeae4);
 }
@@ -1262,6 +1266,28 @@ input:checked + .toggle-slider:before {
   justify-content: center;
   position: relative;
   overflow: hidden;
+}
+
+.print-background-picker {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+}
+
+.print-background-picker .form-label {
+  color: var(--text-main);
+}
+
+.print-background-picker .form-input {
+  width: 100%;
+}
+
+.print-background-picker p {
+  color: var(--text-muted);
+  font-size: 0.72rem;
 }
 
 /* The Canvas Wrapper */
