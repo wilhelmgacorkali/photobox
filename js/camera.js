@@ -4,6 +4,7 @@
  */
 
 import { soundFX } from './audio.js';
+import { CameraBackground } from './virtual-background.js';
 
 export class CameraBooth {
   constructor(videoElement, flashOverlay, countdownOverlay, countdownNumber, countdownStatusText) {
@@ -23,6 +24,8 @@ export class CameraBooth {
     // In-memory capture canvas
     this.captureCanvas = document.createElement('canvas');
     this.captureCtx = this.captureCanvas.getContext('2d');
+    this.backgroundCanvas = document.getElementById('camera-background-canvas');
+    this.background = new CameraBackground(videoElement, this.backgroundCanvas);
 
     // Callbacks
     this.onPhotoCaptured = null; // (index, dataUrl) => {}
@@ -51,6 +54,9 @@ export class CameraBooth {
       this.video.srcObject = this.stream;
       await this.video.play();
       this.updateMirrorStyle();
+      if (this.background.currentId !== 'original') {
+        await this.background.start();
+      }
       return true;
     } catch (err) {
       console.warn("Camera start failed, falling back to simulated/upload mode:", err);
@@ -59,6 +65,7 @@ export class CameraBooth {
   }
 
   stopCamera() {
+    this.background.stop();
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
@@ -89,6 +96,16 @@ export class CameraBooth {
     } else {
       this.video.classList.add('unmirrored');
     }
+    this.background.isMirrored = this.isMirrored;
+  }
+
+  async setBackground(backgroundId) {
+    await this.background.setBackground(backgroundId);
+  }
+
+  setFilter(filterCSS) {
+    this.video.style.filter = filterCSS;
+    this.background.setFilter(filterCSS);
   }
 
   setTimerSeconds(sec) {
@@ -99,6 +116,10 @@ export class CameraBooth {
    * Take single snapshot from video element
    */
   captureCurrentFrame() {
+    if (this.background.currentId !== 'original') {
+      return this.background.captureFrame();
+    }
+
     const vW = this.video.videoWidth || 640;
     const vH = this.video.videoHeight || 480;
 

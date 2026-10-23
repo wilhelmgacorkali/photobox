@@ -8,6 +8,7 @@ import { LAYOUTS } from './layouts.js';
 import { THEMES, STICKERS, FILTERS } from './themes.js';
 import { PhotostripRenderer } from './renderer.js';
 import { CameraBooth } from './camera.js';
+import { CAMERA_BACKGROUNDS } from './virtual-background.js';
 import { soundFX } from './audio.js';
 
 // DOM Elements
@@ -35,6 +36,7 @@ const themeContainer = document.getElementById('themes-grid-container');
 const categoryPills = document.querySelectorAll('.cat-pill');
 const customColorInput = document.getElementById('custom-bg-color');
 const filtersContainer = document.getElementById('filters-scroll-container');
+const backdropsContainer = document.getElementById('camera-backdrops');
 const stickersContainer = document.getElementById('stickers-picker-container');
 const btnClearStickers = document.getElementById('btn-clear-stickers');
 
@@ -74,6 +76,7 @@ function init() {
   renderLayouts();
   renderThemes('all');
   renderFilters();
+  renderCameraBackdrops();
   renderStickers();
   updateShotsTray();
 
@@ -121,6 +124,10 @@ async function tryAutoStartCamera() {
 }
 
 function setupCameraListeners() {
+  camera.background.onError = error => {
+    showToast(`Efek background berhenti: ${error.message}`, 'error');
+  };
+
   btnStartCamera.addEventListener('click', async () => {
     try {
       await camera.startCamera();
@@ -452,11 +459,47 @@ function renderFilters() {
       renderer.setFilter(f.id);
 
       // Also apply filter live on webcam video
-      video.style.filter = f.css;
+      camera.setFilter(f.css);
       showToast(`Filter: ${f.name}`);
     });
 
     filtersContainer.appendChild(chip);
+  });
+}
+
+function renderCameraBackdrops() {
+  backdropsContainer.innerHTML = '';
+
+  CAMERA_BACKGROUNDS.forEach(background => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `backdrop-chip ${background.id === camera.background.currentId ? 'active' : ''}`;
+    button.dataset.backdrop = background.id;
+    button.setAttribute('aria-pressed', String(background.id === camera.background.currentId));
+    button.innerHTML = `<span class="backdrop-swatch" aria-hidden="true"></span><span>${background.name}</span>`;
+
+    button.addEventListener('click', async () => {
+      backdropsContainer.querySelectorAll('.backdrop-chip').forEach(chip => {
+        chip.classList.remove('active');
+        chip.setAttribute('aria-pressed', 'false');
+      });
+      button.classList.add('active');
+      button.setAttribute('aria-pressed', 'true');
+
+      try {
+        await camera.setBackground(background.id);
+        showToast(`Background kamera: ${background.name}`, 'success');
+      } catch (error) {
+        button.classList.remove('active');
+        button.setAttribute('aria-pressed', 'false');
+        const previous = backdropsContainer.querySelector(`[data-backdrop="${camera.background.currentId}"]`);
+        previous?.classList.add('active');
+        previous?.setAttribute('aria-pressed', 'true');
+        showToast(`Background tidak dapat dimuat: ${error.message}`, 'error');
+      }
+    });
+
+    backdropsContainer.appendChild(button);
   });
 }
 

@@ -316,6 +316,23 @@ body::before {
   transform: scaleX(1);
 }
 
+#camera-background-canvas {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.viewfinder-card.virtual-background-active #camera-video {
+  display: none;
+}
+
+.viewfinder-card.virtual-background-active #camera-background-canvas {
+  display: block;
+}
+
 /* Shutter Flash Screen Effect */
 .flash-overlay {
   position: absolute;
@@ -978,6 +995,83 @@ body::before {
   padding: 2px 2px 10px;
   scrollbar-width: thin;
   scrollbar-color: var(--border-glass) transparent;
+}
+
+.backdrop-selector {
+  min-width: 0;
+}
+
+.backdrop-note {
+  margin-top: 2px;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.backdrop-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 8px;
+}
+
+.backdrop-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 6px 9px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+  color: var(--text-muted);
+  font: 600 0.75rem var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.backdrop-chip:hover {
+  background: var(--bg-glass-hover);
+  color: #fff;
+}
+
+.backdrop-chip.active {
+  border-color: var(--accent-pink);
+  background: rgba(255, 101, 132, 0.16);
+  color: #fff;
+}
+
+.backdrop-swatch {
+  width: 30px;
+  height: 28px;
+  flex: 0 0 30px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  background: var(--backdrop-preview, #222);
+}
+
+.backdrop-chip[data-backdrop="original"] .backdrop-swatch {
+  --backdrop-preview: linear-gradient(135deg, #333, #08090e);
+}
+
+.backdrop-chip[data-backdrop="curtain-pink"] .backdrop-swatch {
+  --backdrop-preview: repeating-linear-gradient(90deg, #a72851 0 5px, #f5a8bd 10px 17px, #c63c68 22px 28px);
+}
+
+.backdrop-chip[data-backdrop="curtain-cream"] .backdrop-swatch {
+  --backdrop-preview: repeating-linear-gradient(90deg, #947957 0 5px, #f1dfc0 10px 17px, #c9ad82 22px 28px);
+}
+
+.backdrop-chip[data-backdrop="plain-white"] .backdrop-swatch {
+  --backdrop-preview: linear-gradient(145deg, #fffdfa, #eeeae4);
+}
+
+.backdrop-chip[data-backdrop="plain-blue"] .backdrop-swatch {
+  --backdrop-preview: linear-gradient(145deg, #dbeafe, #93c5fd);
+}
+
+.backdrop-chip[data-backdrop="plain-pink"] .backdrop-swatch {
+  --backdrop-preview: linear-gradient(145deg, #ffe4e6, #f9a8d4);
 }
 
 .filter-selector-heading {

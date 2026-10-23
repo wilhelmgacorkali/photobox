@@ -71,6 +71,7 @@
         <div class="viewfinder-card" id="viewfinder-container">
           <!-- Video Element (Front or Back Camera) -->
           <video id="camera-video" autoplay playsinline muted></video>
+          <canvas id="camera-background-canvas" aria-label="Pratinjau kamera dengan background virtual"></canvas>
 
           <!-- Flash Burst Overlay -->
           <div id="flash-overlay" class="flash-overlay"></div>
@@ -155,6 +156,15 @@
           <div class="filters-scroll" id="filters-scroll-container" role="group" aria-label="Pilih efek dan filter foto">
             <!-- Populated dynamically via JS -->
           </div>
+        </div>
+
+        <div class="backdrop-selector">
+          <div class="filter-selector-heading">
+            <span>Background Kamera</span>
+            <span class="filter-hint">Ganti latar live sebelum mengambil foto</span>
+          </div>
+          <div class="backdrop-options" id="camera-backdrops" role="group" aria-label="Pilih background kamera"></div>
+          <p class="backdrop-note">Background virtual memerlukan internet dan izin kamera. Pilih "Asli" untuk menampilkan latar kamera semula.</p>
         </div>
 
         <!-- Big Shutter Trigger Button -->
